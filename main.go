@@ -21,6 +21,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v0/{city}/weather", h.GetWeatherByCity).Methods(http.MethodGet)
+	router.HandleFunc("/api/v0/weather", h.WeatherListRequest).Methods(http.MethodGet)
 
 	log.Println("Starting API server on 8082")
 	if err := http.ListenAndServe(":8082", router); err != nil {

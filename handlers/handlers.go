@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
+	"log"
 	"net/http"
 	"time"
 
@@ -36,7 +37,6 @@ func (u *ApiHandler) GetWeatherByCity(w http.ResponseWriter, req *http.Request) 
 	}
 
 	result := GetWeatherResponse{
-		ID:          resp.ID,
 		City:        resp.City,
 		TimeStamp:   resp.TimeStamp,
 		Temperature: resp.Temperature,
@@ -55,7 +55,6 @@ func (u *ApiHandler) GetWeatherByCity(w http.ResponseWriter, req *http.Request) 
 }
 
 type GetWeatherResponse struct {
-	ID          int
 	City        string
 	TimeStamp   time.Time
 	Temperature float32
@@ -71,4 +70,44 @@ func (c GetWeatherResponse) writeToWeb(w http.ResponseWriter) error {
 		return err
 	}
 	return nil
+}
+
+type WeatherListResponse struct {
+	Cities []GetWeatherResponse
+}
+
+func (c WeatherListResponse) writeToWeb(w http.ResponseWriter) {
+	b, err := json.Marshal(c.Cities)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Header().Add("Content-Type", "application/json")
+	if _, err := w.Write(b); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (u *ApiHandler) WeatherListRequest(w http.ResponseWriter, req *http.Request) {
+	cities, err := u.apiSvc.GetListWeatherRequest()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response := []GetWeatherResponse{}
+	for _, city := range cities {
+		q := GetWeatherResponse{}
+		q.City = city.City
+		q.TimeStamp = city.TimeStamp
+		q.Temperature = city.Temperature
+
+		response = append(response, q)
+	}
+
+	resp := WeatherListResponse{}
+	resp.Cities = response
+
+	resp.writeToWeb(w)
+
+	w.WriteHeader(http.StatusOK)
 }

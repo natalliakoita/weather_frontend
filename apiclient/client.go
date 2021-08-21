@@ -49,6 +49,7 @@ func (a ApiWeather) GetWheater(city string) (*GetWeatherResponse, error) {
 
 type ApiWeatherInterface interface {
 	GetWheater(city string) (*GetWeatherResponse, error)
+	GetListWeatherRequest() (*WeatherListResponse, error)
 }
 
 type GetWeatherResponse struct {
@@ -56,4 +57,32 @@ type GetWeatherResponse struct {
 	City        string    `json:"city"`
 	TimeStamp   time.Time `json:"dt"`
 	Temperature float32   `json:"temperature"`
+}
+
+type WeatherListResponse struct {
+	Cities []GetWeatherResponse
+}
+
+func (a ApiWeather) GetListWeatherRequest() (*WeatherListResponse, error) {
+	baseUrl := fmt.Sprintf("http://%s:8080/api/v0/weather", a.Host)
+	u, err := url.Parse(baseUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := a.Client.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	bodyData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	w := new(WeatherListResponse)
+	if err = json.Unmarshal(bodyData, w); err != nil {
+		return nil, err
+	}
+	return w, nil
 }
