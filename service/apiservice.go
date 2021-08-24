@@ -41,7 +41,6 @@ func (dbs *ApiService) GetListWeatherRequest() ([]Weather, error) {
 	if err != nil {
 		return []Weather{}, err
 	}
-	// TODO
 	var answer []Weather
 	for _, w := range resp.Cities {
 		var ans Weather

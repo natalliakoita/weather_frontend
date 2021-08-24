@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -41,9 +40,6 @@ func (u *ApiHandler) GetWeatherByCity(w http.ResponseWriter, req *http.Request) 
 		TimeStamp:   resp.TimeStamp,
 		Temperature: resp.Temperature,
 	}
-
-	tmpl := template.Must(template.ParseFiles("form.html"))
-	tmpl.Execute(w, result)
 
 	err = result.writeToWeb(w)
 	if err != nil {

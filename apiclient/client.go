@@ -10,8 +10,12 @@ import (
 	"time"
 )
 
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 type ApiWeather struct {
-	Client *http.Client
+	Client HTTPClient
 	Host   string
 }
 
@@ -30,7 +34,12 @@ func (a ApiWeather) GetWheater(city string) (*GetWeatherResponse, error) {
 		return nil, err
 	}
 
-	resp, err := a.Client.Get(u.String())
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := a.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +79,12 @@ func (a ApiWeather) GetListWeatherRequest() (*WeatherListResponse, error) {
 		return nil, err
 	}
 
-	resp, err := a.Client.Get(u.String())
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := a.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
